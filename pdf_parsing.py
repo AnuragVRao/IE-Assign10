@@ -1,12 +1,8 @@
 import fitz  # PyMuPDF library for PDF parsing
 import re    # Regular expressions, used for searching text patterns
 
-def parse_pdf_to_text(pdf_path):
-    """
-    Extracts clean text from each page of the PDF.
-    - Removes headers, footers, and metadata.
-    - Returns a single string containing all text.
-    """
+def parse_pdf_to_text(pdf_path):                                    # Extracts clean text from each page of the PDF.
+
     doc = fitz.open(pdf_path)
     full_text = []
 
@@ -14,28 +10,20 @@ def parse_pdf_to_text(pdf_path):
         page = doc.load_page(page_num)
         text = page.get_text()
 
-        text = re.sub(r'(?m)^\s*(Page\s*\d+|\d+)\s*$', '', text) # Removes lines containing page numbers
+        text = re.sub(r'(?m)^\s*(Page\s*\d+|\d+)\s*$', '', text)    # Removes headers/footers and lines having page numbers 
 
-        full_text.append(text.strip())  # Remove leading/trailing whitespace
+        full_text.append(text.strip())                              # Remove leading/trailing whitespace
 
-    return "\n".join(full_text)
+    return "\n".join(full_text)                                     # Returns a single string containing all text.
 
-def clean_text(text):
-    """
-    Applies extra preprocessing:
-    - Removes duplicate headers/footers if recurring.
-    - Removes special symbols that do not contribute to meaning.
-    """
-    text = re.sub(r'[■◆○●♦•]', '', text)   # Remove unwanted special symbols
+def clean_text(text):                   # Removes duplicate headers & unwanted special symbols
+
+    text = re.sub(r'[■◆○●♦•]', '', text)
     return text
 
-def chunk_text(text, chunk_size=1024):
-    """
-    Chunks the text into blocks of given size (in tokens/characters), 
-    ensuring sentences are not broken across chunks.
-    - Returns a list of chunks.
-    """
-    sentences = re.split(r'(?<=[.!?]) +', text)  # Split by sentence boundaries
+def chunk_text(text, chunk_size=1024):                  # Chunks the text into blocks of given token size
+
+    sentences = re.split(r'(?<=[.!?]) +', text)         # Split by sentence boundaries ( Para -> sentences )
 
     chunks = []
     current_chunk = ""
@@ -46,21 +34,15 @@ def chunk_text(text, chunk_size=1024):
             chunks.append(current_chunk.strip())
             current_chunk = sentence + " "
     if current_chunk:
-        chunks.append(current_chunk.strip())  # Add final chunk
+        chunks.append(current_chunk.strip())            # Add final chunk
 
     return chunks
 
 def pdf_to_chunks(pdf_path, chunk_size):
-    """
-    Complete pipeline:
-    - Parses PDF
-    - Cleans text
-    - Chunks it into logically readable blocks
-    Returns: list of cleaned text chunks.
-    """
-    raw_text = parse_pdf_to_text(pdf_path)
-    cleaned_text = clean_text(raw_text)
-    return chunk_text(cleaned_text, chunk_size)
+
+    raw_text = parse_pdf_to_text(pdf_path)          # Parses pdf
+    cleaned_text = clean_text(raw_text)             # Cleans text
+    return chunk_text(cleaned_text, chunk_size)     # Returns readable text chunks
 
 
 def main():
